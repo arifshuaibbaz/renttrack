@@ -35,18 +35,16 @@ export function useData() {
       try {
         setLoading(true);
 
-        // Fetch properties
+        // Fetch properties (shared across all accounts)
         const { data: propsData } = await supabase
           .from('properties')
           .select('*')
-          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        // Fetch payments
+        // Fetch payments (shared across all accounts)
         const { data: paysData } = await supabase
           .from('payments')
           .select('*')
-          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         setProperties((propsData || []).map(formatProperty));
@@ -62,17 +60,17 @@ export function useData() {
 
     fetchData();
 
-    // Subscribe to real-time changes
+    // Subscribe to real-time changes (all rows, shared dataset)
     const propsSubscription = supabase
       .channel('properties_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties', filter: `user_id=eq.${user.id}` }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => {
         fetchData();
       })
       .subscribe();
 
     const paysSubscription = supabase
       .channel('payments_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments', filter: `user_id=eq.${user.id}` }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
         fetchData();
       })
       .subscribe();
@@ -88,7 +86,14 @@ export function useData() {
 
     const { data: newProp, error } = await supabase
       .from('properties')
-      .insert([{ ...data, user_id: user.id, expected_rent: Number(data.expectedRent) }])
+      .insert([{
+        user_id: user.id,
+        name: data.name,
+        address: data.address,
+        tenant: data.tenant,
+        phone: data.phone,
+        expected_rent: Number(data.expectedRent),
+      }])
       .select()
       .single();
 
@@ -96,6 +101,13 @@ export function useData() {
       console.error('Error adding property:', error);
       return null;
     }
+
+    // Refetch so the new property shows immediately
+    const { data: propsData } = await supabase
+      .from('properties')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setProperties((propsData || []).map(formatProperty));
 
     return newProp;
   }, [user]);
@@ -110,8 +122,7 @@ export function useData() {
     const { error } = await supabase
       .from('properties')
       .update(updateData)
-      .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('id', id);
 
     if (error) console.error('Error updating property:', error);
   }, [user]);
@@ -122,8 +133,7 @@ export function useData() {
     await supabase
       .from('properties')
       .delete()
-      .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('id', id);
   }, [user]);
 
   const recordPayment = useCallback(async (propertyId, month, amount, note = '') => {
@@ -140,8 +150,7 @@ export function useData() {
           received_date: new Date().toISOString(),
           status: 'received',
         })
-        .eq('id', existing.id)
-        .eq('user_id', user.id);
+        .eq('id', existing.id);
     } else {
       await supabase
         .from('payments')
@@ -164,8 +173,7 @@ export function useData() {
       .from('payments')
       .delete()
       .eq('property_id', propertyId)
-      .eq('month', month)
-      .eq('user_id', user.id);
+      .eq('month', month);
   }, [user]);
 
   const getPaymentsForMonth = useCallback((month) => {
