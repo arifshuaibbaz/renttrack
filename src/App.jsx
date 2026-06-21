@@ -1,49 +1,50 @@
-import { useState } from 'react';
-import Sidebar from './components/Sidebar';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, AuthContext } from './context/AuthContext';
+import { useContext } from 'react';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Properties from './pages/Properties';
 import RentTracker from './pages/RentTracker';
 import Reports from './pages/Reports';
-import { useData } from './hooks/useData';
+import Sidebar from './components/Sidebar';
 
-export default function App() {
-  const [page, setPage] = useState('dashboard');
-  const data = useData();
+function AppContent() {
+  const { user, loading } = useContext(AuthContext);
 
-  const renderPage = () => {
-    switch (page) {
-      case 'dashboard':
-        return <Dashboard properties={data.properties} payments={data.payments} />;
-      case 'properties':
-        return <Properties
-          properties={data.properties}
-          addProperty={data.addProperty}
-          updateProperty={data.updateProperty}
-          deleteProperty={data.deleteProperty}
-        />;
-      case 'rents':
-        return <RentTracker
-          properties={data.properties}
-          payments={data.payments}
-          recordPayment={data.recordPayment}
-          deletePayment={data.deletePayment}
-          getPaymentForProperty={data.getPaymentForProperty}
-        />;
-      case 'reports':
-        return <Reports properties={data.properties} payments={data.payments} />;
-      default:
-        return null;
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-900">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
 
   return (
-    <div className="flex min-h-screen bg-slate-950">
-      <Sidebar active={page} onNavigate={setPage} />
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-5xl mx-auto">
-          {renderPage()}
+    <BrowserRouter>
+      <div className="flex h-screen bg-slate-900">
+        <Sidebar />
+        <div className="flex-1 overflow-auto">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/rent-tracker" element={<RentTracker />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
         </div>
-      </main>
-    </div>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

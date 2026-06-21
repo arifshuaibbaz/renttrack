@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Building2, X, Check } from 'lucide-react';
 import { formatCurrency } from '../utils/storage';
+import { useData } from '../hooks/useData';
 
 const emptyForm = { name: '', address: '', tenant: '', phone: '', expectedRent: '' };
 
-export default function Properties({ properties, addProperty, updateProperty, deleteProperty }) {
+export default function Properties() {
+  const { properties, addProperty, updateProperty, deleteProperty } = useData();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyForm);

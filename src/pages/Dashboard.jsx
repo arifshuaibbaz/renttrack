@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Building2, DollarSign, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatCurrency, currentMonthStr, monthLabel } from '../utils/storage';
+import { useData } from '../hooks/useData';
 
 const MONTHS_BACK = 6;
 
@@ -18,7 +19,8 @@ function getPastMonths(n) {
   return months;
 }
 
-export default function Dashboard({ properties, payments }) {
+export default function Dashboard() {
+  const { properties, payments } = useData();
   const thisMonth = currentMonthStr();
   const pastMonths = getPastMonths(MONTHS_BACK);
 

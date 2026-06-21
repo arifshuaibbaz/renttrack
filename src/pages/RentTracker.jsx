@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, AlertCircle, Plus, Trash2, X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatCurrency, monthLabel, currentMonthStr } from '../utils/storage';
+import { useData } from '../hooks/useData';
 
 function getPrevMonth(m) {
   const [y, mo] = m.split('-').map(Number);
@@ -13,7 +14,8 @@ function getNextMonth(m) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export default function RentTracker({ properties, payments, recordPayment, deletePayment, getPaymentForProperty }) {
+export default function RentTracker() {
+  const { properties, payments, recordPayment, deletePayment, getPaymentForProperty } = useData();
   const [month, setMonth] = useState(currentMonthStr);
   const [modal, setModal] = useState(null); // { propertyId, existing }
   const [amount, setAmount] = useState('');

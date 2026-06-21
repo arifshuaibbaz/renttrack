@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { formatCurrency, monthLabel } from '../utils/storage';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useData } from '../hooks/useData';
 
 function getPastMonths(n) {
   const months = [];
@@ -16,7 +17,8 @@ function getPastMonths(n) {
   return months;
 }
 
-export default function Reports({ properties, payments }) {
+export default function Reports() {
+  const { properties, payments } = useData();
   const pastMonths = getPastMonths(12);
 
   const monthlyData = useMemo(() => pastMonths.map(month => {
