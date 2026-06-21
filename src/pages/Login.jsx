@@ -16,23 +16,30 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-          setError(error.message || 'Sign-up failed. Please try again.');
+        const result = await supabase.auth.signUp({ email, password });
+        console.log('SignUp result:', result);
+        if (result.error) {
+          const msg = result.error.message || result.error.msg || JSON.stringify(result.error) || 'Sign-up failed';
+          console.error('SignUp error:', msg);
+          setError(msg);
           setLoading(false);
           return;
         }
         alert('Check your email for confirmation!');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          setError(error.message || 'Login failed. Please check your email and password.');
+        const result = await supabase.auth.signInWithPassword({ email, password });
+        console.log('SignIn result:', result);
+        if (result.error) {
+          const msg = result.error.message || result.error.msg || JSON.stringify(result.error) || 'Login failed';
+          console.error('SignIn error:', msg);
+          setError(msg);
           setLoading(false);
           return;
         }
       }
     } catch (err) {
-      setError(err?.message || 'An error occurred. Please try again.');
+      console.error('Catch error:', err);
+      setError(err?.message || JSON.stringify(err) || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
