@@ -17,14 +17,22 @@ export default function Login() {
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        if (error) {
+          setError(error.message || 'Sign-up failed. Please try again.');
+          setLoading(false);
+          return;
+        }
         alert('Check your email for confirmation!');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          setError(error.message || 'Login failed. Please check your email and password.');
+          setLoading(false);
+          return;
+        }
       }
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
