@@ -82,7 +82,10 @@ export function useData() {
   }, [user]);
 
   const addProperty = useCallback(async (data) => {
-    if (!user) return null;
+    if (!user) {
+      alert('You are not logged in, so the property cannot be saved. Please log in again.');
+      return null;
+    }
 
     const { data: newProp, error } = await supabase
       .from('properties')
@@ -99,6 +102,7 @@ export function useData() {
 
     if (error) {
       console.error('Error adding property:', error);
+      alert('Could not save property.\n\n' + (error.message || JSON.stringify(error)) + '\n(code: ' + (error.code || 'none') + ')');
       return null;
     }
 
